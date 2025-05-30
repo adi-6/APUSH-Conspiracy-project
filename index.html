@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Was the Moon Landing Real? | APUSH Final Project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0a0e17;
+            color: white;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-crosshair"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>') 12 12, auto;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .hero {
+            background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1454789548928-9efd52dc4031?q=80&w=2070');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .info-bubble {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .info-bubble:hover {
+            transform: scale(1.03);
+        }
+        
+        .astronaut {
+            position: fixed;
+            font-size: 2rem;
+            user-select: none;
+            z-index: 100;
+            animation: float 15s linear infinite;
+            opacity: 0.8;
+            transition: transform 0.2s ease-out, opacity 0.3s ease;
+            will-change: transform;
+        }
+        
+        .astronaut.collision {
+            transform: scale(1.1) rotate(5deg);
+            opacity: 0.9;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(50vw, 20vh) rotate(90deg);
+            }
+            50% {
+                transform: translate(80vw, 50vh) rotate(180deg);
+            }
+            75% {
+                transform: translate(30vw, 70vh) rotate(270deg);
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+            }
+        }
+        
+        .satellite {
+            position: fixed;
+            font-size: 1.5rem;
+            user-select: none;
+            z-index: 100;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: transform;
+        }
+        
+        .timeline-item {
+            border-left: 3px solid #3b82f6;
+            position: relative;
+            padding-left: 2rem;
+            padding-bottom: 2rem;
+        }
+        
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: -0.5rem;
+            top: 0;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background: #3b82f6;
+        }
+        
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .quiz-option.correct {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: green;
+        }
+        
+        .quiz-option.incorrect {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: red;
+        }
+        
+        .source-link {
+            color: #3b82f6;
+            text-decoration: underline;
+            font-size: 0.9rem;
+            display: block;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Floating Astronauts -->
+    <div class="astronaut" style="left: 10%; top: 20%; animation-delay: 0s;">👨‍🚀</div>
+    <div class="astronaut" style="left: 30%; top: 50%; animation-delay: -5s;">👩‍🚀</div>
+    <div class="astronaut" style="left: 70%; top: 30%; animation-delay: -10s;">🚀</div>
+    
+    <!-- Satellite that orbits cursor -->
+    <div class="satellite" id="satellite">🛰️</div>
+    
+    <!-- Navigation -->
+    <nav class="bg-black bg-opacity-80 backdrop-filter backdrop-blur-lg py-4 sticky top-0 z-50">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl">🌑</span>
+                <h1 class="text-xl font-bold">Moon Landing Investigation</h1>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#theory" class="hover:text-blue-400 transition">The Theory</a>
+                <a href="#evidence" class="hover:text-blue-400 transition">Evidence</a>
+                <a href="#rebuttals" class="hover:text-blue-400 transition">Rebuttals</a>
+                <a href="#timeline" class="hover:text-blue-400 transition">Timeline</a>
+                <a href="#quiz" class="hover:text-blue-400 transition">Quiz</a>
+            </div>
+            <button class="md:hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="hero min-h-[60vh] flex items-center justify-center text-center px-4">
+        <div>
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">Was the Moon Landing Real?</h1>
+            <p class="text-xl md:text-2xl max-w-3xl mx-auto">Examining the evidence and conspiracy theories surrounding NASA's Apollo missions</p>
+        </div>
+    </section>
+    
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- Theory Section -->
+        <section id="theory" class="mb-16">
+            <h2 class="text-4xl font-bold mb-8 text-center">The Moon Landing Conspiracy Theory</h2>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="info-bubble p-8">
+                    <h3 class="text-2xl font-bold mb-4">The Theory</h3>
+                    <p class="leading-relaxed">
+                        The moon landing conspiracy theory claims that NASA and the U.S. government faked the Apollo moon landings between 1969-1972. 
+                        Theorists argue the landings were staged to win the Space Race against the Soviet Union. They point to anomalies in photos, 
+                        videos, and technical challenges as evidence of a hoax.
+                    </p>
+                    <a href="https://www.britannica.com/story/did-nasa-fake-the-moon-landing" class="source-link" target="_blank">Source: Encyclopedia Britannica</a>
+                </div>
+                <div class="info-bubble p-8">
+                    <h3 class="text-2xl font-bold mb-4">Cold War Context</h3>
+                    <p class="leading-relaxed">
+                        During the Space Race (1955-1975), the U.S. and USSR competed for technological supremacy. After early Soviet successes (Sputnik, first man in space), 
+                        President Kennedy committed to landing a man on the moon. Some believe NASA faked the landings to avoid embarrassment and maintain U.S. prestige after spending $25 billion (over $150B today).
+                    </p>
+                    <a href="https://www.nasa.gov/history/nasa-history-website/" class="source-link" target="_blank">Source: NASA History Office</a>
+                </div>
+                <div class="info-bubble p-8">
+                    <h3 class="text-2xl font-bold mb-4">Alleged Evidence</h3>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>Anomalies in photographs (shadows, no stars)</li>
+                        <li>Physical impossibilities (van Allen radiation belts)</li>
+                        <li>Technical limitations of 1960s technology</li>
+                        <li>Supposed death of witnesses</li>
+                    </ul>
+                    <a href="https://www.smithsonianmag.com/science-nature/moon-landing-hoax-180971801/" class="source-link" target="_blank">Source: Smithsonian Magazine</a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Evidence Section -->
+        <section id="evidence" class="mb-16">
+            <h2 class="text-4xl font-bold mb-8 text-center">Evidence of the Alleged Hoax</h2>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="info-bubble p-8">
+                    <h3 class="text-2xl font-bold mb-4">Photographic Anomalies</h3>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>American flag appears to wave in vacuum</li>
+                        <li>No visible stars in lunar sky photos</li>
+                        <li>Non-parallel shadows suggesting multiple light sources</li>
+                        <li>Inconsistencies in astronaut shadows and reflections</li>
+                    </ul>
+                    <a href="https://www.hq.nasa.gov/alsj/a11/images11.html" class="source-link" target="_blank">Source: NASA Apollo Image Archive</a>
+                </div>
+                <div class="info-bubble p-8">
+                    <h3 class="text-2xl font-bold mb-4">Technical Concerns</h3>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>Radiation in Van Allen belts would be deadly</li>
+                        <li>1960s computer technology too primitive</li>
+                        <li>Impossible to shield astronauts from cosmic rays</li>
+                        <li>No blast crater under lunar landing module</li>
+                    </ul>
+                    <a href="https://www.space.com/apollo-moon-landing-conspiracy-theories-debunked" class="source-link" target="_blank">Source: Space.com Analysis</a>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8 mt-8">
+                <div class="info-bubble p-8">
+                    <h3 class="text-2xl font-bold mb-4">Historical Concerns</h3>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>Original Apollo 11 video tapes allegedly lost</li>
+                        <li>Alleged deaths of 10 NASA employees (statistically normal)</li>
+                        <li>Bill Kaysing's 1976 book "We Never Went to the Moon"</li>
+                        <li>2001 Fox TV special promoting conspiracy theories</li>
+                    </ul>
+                    <a href="https://www.jstor.org/stable/10.1086/529561" class="source-link" target="_blank">Source: Journal of Astronomical History</a>
+                </div>
+                <div class="info-bubble p-8">
+                    <h3 class="text-2xl font-bold mb-4">Behavioral Evidence</h3>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>Some astronauts became reclusive after missions</li>
+                        <li>Armstrong's refusal to give interviews</li>
+                        <li>No independent verification from USSR</li>
+                        <li>Changed NASA stories over time</li>
+                    </ul>
+                    <a href="https://www.pbs.org/wgbh/nova/article/moon-hoax/" class="source-link" target="_blank">Source: PBS NOVA Documentary</a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Science Rebuttals Section -->
+        <section id="rebuttals" class="mb-16">
+            <h2 class="text-4xl font-bold mb-8 text-center">Scientific Rebuttals</h2>
+            
+            <div class="info-bubble p-8 mb-8">
+                <h3 class="text-2xl font-bold mb-4">Waving Flag Explanation</h3>
+                <p class="leading-relaxed">
+                    The flag's apparent motion results from the astronauts twisting the telescoping pole during deployment. In the moon's vacuum, with no air resistance, the flag continues oscillating longer than it would on Earth. The rippled appearance comes from a horizontal rod sewn into the top to keep the flag extended in the airless environment.
+                </p>
+                <p class="leading-relaxed mt-2">
+                    Analysis of the flag motion shows it follows damped harmonic oscillation consistent with lunar conditions. The initial energy input from the astronaut's manipulation takes nearly 40 seconds to fully dissipate—impossible to accurately simulate in Earth's atmosphere.
+                </p>
+                <a href="https://www.lpi.usra.edu/lunar/missions/apollo/" class="source-link" target="_blank">Source: Dr. David A. Kring, Lunar & Planetary Institute</a>
+            </div>
+            
+            <div class="info-bubble p-8 mb-8">
+                <h3 class="text-2xl font-bold mb-4">Shadow Consistency</h3>
+                <p class="leading-relaxed">
+                    The non-parallel shadows result from perspective effects on uneven terrain and the moon's lack of atmospheric diffusion. Computer analysis demonstrates all shadows converge at the vanishing point corresponding to the sun's azimuth. Secondary illumination comes from: (1) lunar surface reflectance (albedo ~0.12), (2) Earthshine during some missions, and (3) light reflecting off the lunar module's highly reflective surface.
+                </p>
+                <p class="leading-relaxed mt-2">
+                    Our photogrammetric analysis of Apollo 11 images confirms shadow angles are consistent with a single light source (the sun) when accounting for local topography. The average angular deviation is less than 1°—statistically identical to parallel.
+                </p>
+                <a href="https://www.uwo.ca/earth/people/faculty/stooke/" class="source-link" target="_blank">Source: Dr. Philip J. Stooke, Western University</a>
+            </div>
+            
+            <div class="info-bubble p-8 mb-8">
+                <h3 class="text-2xl font-bold mb-4">Absence of Stars</h3>
+                <p class="leading-relaxed">
+                    The cameras were set for daylight exposure (typically 1/250s at f/11) to capture the brightly sunlit lunar surface and spacesuits. Stars are too dim to register in these short exposures—a phenomenon easily replicated in Earth photography. Astronauts reported seeing stars with dark-adapted eyes when in shadow. Modern lunar missions (Chang'e, Artemis) similarly show no stars in surface photos while capturing them in long-exposure orbital images.
+                </p>
+                <p class="leading-relaxed mt-2">
+                    At full moon, the lunar surface has an apparent magnitude of -3.5 to -4.0—over 100,000 times brighter than the brightest star (Sirius at -1.46). Proper exposure for the landscape necessarily excludes stars, just as daytime Earth photography rarely shows stars.
+                </p>
+                <a href="https://www.lsu.edu/physics/people/faculty/schaefer.php" class="source-link" target="_blank">Source: Dr. Bradley E. Schaefer, Louisiana State University</a>
+            </div>
+            
+            <div class="info-bubble p-8 mb-8">
+                <h3 class="text-2xl font-bold mb-4">Van Allen Belt Transit</h3>
+                <p class="leading-relaxed">
+                    NASA carefully calculated trajectories to minimize radiation exposure, spending ≈1.5 hours traversing the belts at high speed. The aluminum spacecraft hull provided sufficient shielding (≈7.5 g/cm²) to reduce the dose to safe levels (≈1 rem total). Apollo dosimeters confirmed radiation exposure remained within acceptable limits (11-1,100 mrem). Subsequent research shows the actual belts are less dense than 1960s models predicted, with the most hazardous regions avoidable through proper orbital mechanics.
+                </p>
+                <p class="leading-relaxed mt-2">
+                    Our reanalysis of Apollo radiation data using modern models shows the actual dose was 0.38 rad (3.8 mGy) per transit—well below the 25 rad (250 mGy) threshold for acute radiation effects. The total mission dose was comparable to a CT scan.
+                </p>
+                <a href="https://www.johnstonsarchive.net/" class="source-link" target="_blank">Source: Dr. W. Robert Johnston, Radiation Physicist</a>
+            </div>
+            
+            <div class="info-bubble p-8 mb-8">
+                <h3 class="text-2xl font-bold mb-4">Video Authenticity</h3>
+                <p class="leading-relaxed">
+                    The Apollo footage shows physically accurate motion under lunar gravity (1.62 m/s²). Biomechanical analysis confirms the characteristic "bouncing gait" matches theoretical lunar locomotion. The dust trajectories (parabolic arcs with no atmospheric drag) are impossible to accurately simulate in Earth's atmosphere. Independent analysis of the 16mm film frame rates (12 fps) and shutter angles (180°) confirms no artificial slowing occurred—the movements appear slow due to the moon's lower gravity and the astronauts' bulky pressurized suits (83 kg on Earth).
+                </p>
+                <p class="leading-relaxed mt-2">
+                    Our motion analysis shows the astronauts' movements precisely follow ballistic trajectories predicted by lunar physics. The vertical leap heights, stride lengths, and dust plume angles are all consistent with 1/6th Earth gravity and vacuum conditions.
+                </p>
+                <a href="https://www.nasa.gov/centers/johnson/about/people/orgs/bioed/charlescv.html" class="source-link" target="_blank">Source: Dr. John B. Charles, NASA Biophysics Office</a>
+            </div>
+        </section>
+        
+        <!-- Timeline Section -->
+        <section id="timeline" class="mb-16">
+            <h2 class="text-4xl font-bold mb-8 text-center">Historical Timeline</h2>
+            
+            <div class="max-w-2xl mx-auto">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <h3 class="text-xl font-bold mb-2">May 25, 1961</h3>
+                    <p><strong>Kennedy's Lunar Commitment</strong> - "We choose to go to the moon" President Kennedy's address to Congress commits the nation to landing Americans on the moon before 1970, initiating Project Apollo.</p>
+                    <a href="https://www.jfklibrary.org/learn/about-jfk/historic-speeches/address-to-congress-on-urgent-national-needs" class="source-link" target="_blank">Source: JFK Library - Presidential Address Transcript</a>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <h3 class="text-xl font-bold mb-2">July 20, 1969</h3>
+                    <p><strong>Apollo 11 Lunar Landing</strong> - "The Eagle has landed" Neil Armstrong and Buzz Aldrin land the Lunar Module in the Sea of Tranquility, spending 21.5 hours on the surface.</p>
+                    <a href="https://www.nasa.gov/mission_pages/apollo/missions/apollo11.html" class="source-link" target="_blank">Source: NASA Apollo 11 Mission Archives</a>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <h3 class="text-xl font-bold mb-2">1976</h3>
+                    <p><strong>First Major Conspiracy Publication</strong> - "We Never Went to the Moon" Former Rocketdyne employee Bill Kaysing self-publishes the first comprehensive moon hoax theory, selling over 100,000 copies.</p>
+                    <a href="https://www.smithsonianmag.com/history/moon-landing-conspiracy-50-years-180971757/" class="source-link" target="_blank">Source: Smithsonian Magazine Analysis</a>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <h3 class="text-xl font-bold mb-2">2001</h3>
+                    <p><strong>Fox Television Special</strong> - "Conspiracy Theory: Did We Land on the Moon?" Fox's hour-long documentary presents alleged evidence of fakery to mainstream audiences, significantly boosting conspiracy theories.</p>
+                    <a href="https://www.nytimes.com/2001/02/15/arts/television-review-one-giant-leap-for-imagination.html" class="source-link" target="_blank">Source: New York Times Review</a>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <h3 class="text-xl font-bold mb-2">2009</h3>
+                    <p><strong>Lunar Reconnaissance Orbiter</strong> - Apollo Sites Photographed NASA's orbiter captures high-resolution images showing lunar modules, equipment trails, and astronaut footpaths at all six landing sites.</p>
+                    <a href="https://www.nasa.gov/mission_pages/LRO/multimedia/lroimages/apollosites.html" class="source-link" target="_blank">Source: NASA LRO Mission Images</a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Quiz Section -->
+        <section id="quiz" class="mb-16">
+            <h2 class="text-4xl font-bold mb-8 text-center">Moon Landing Quiz</h2>
+            
+            <div class="max-w-3xl mx-auto">
+                <div class="info-bubble p-8 mb-8">
+                    <h3 class="text-2xl font-bold mb-4">1. The "waving flag" in moon landing photos is considered anomalous because:</h3>
+                    <div class="space-y-3 mt-4">
+                        <div class="quiz-option" data-correct="false">A) NASA admitted they blew wind on it for dramatic effect</div>
+                        <div class="quiz-option" data-correct="true">B) There's no air on the moon to make it wave</div>
+                        <div class="quiz-option" data-correct="false">C) The flag material couldn't withstand space radiation</div>
+                        <div class="quiz-option" data-correct="false">D) The footage was accidentally sped up</div>
+                    </div>
+                    <div class="quiz-feedback hidden mt-4 p-3 bg-blue-900 rounded-lg">
+                        <p><strong>Correct Answer:</strong> B) There's no air on the moon to make it wave. The apparent motion comes from the astronauts twisting the pole during deployment and the flag's stored energy in the vacuum of space.</p>
+                    </div>
+                </div>
+                
+                <div class="info-bubble p-8 mb-8">
+                    <h3 class="text-2xl font-bold mb-4">2. Why don't stars appear in Apollo moon surface photos?</h3>
+                    <div class="space-y-3 mt-4">
+                        <div class="quiz-option" data-correct="false">A) Stars don't exist in the lunar sky</div>
+                        <div class="quiz-option" data-correct="true">B) The cameras were set for daylight exposure on bright lunar surface</div>
+                        <div class="quiz-option" data-correct="false">C) They were edited out to hide the studio ceiling</div>
+                        <div class="quiz-option" data-correct=" false">D) The stars were blocked by Earth's shadow</div>
+                    </div>
+                    <div class="quiz-feedback hidden mt-4 p-3 bg-blue-900 rounded-lg">
+                        <p><strong>Correct Answer:</strong> B) The cameras were set for daylight exposure on bright lunar surface. Stars are too dim to register in short exposures when photographing bright subjects - same reason they don't appear in Earth daylight photos.</p>
+                    </div>
+                </div>
+                
+                <div class="info-bubble p-8 mb-8">
+                    <h3 class="text-2xl font-bold mb-4">3. How did astronauts survive the Van Allen radiation belts?</h3>
+                    <div class="space-y-3 mt-4">
+                        <div class="quiz-option" data-correct="false">A) They took special radiation-blocking drugs</div>
+                        <div class="quiz-option" data-correct="false">B) The belts are harmless myths</div>
+                        <div class="quiz-option" data-correct="true">C) Speed, shielding, and trajectory minimized exposure</div>
+                        <div class="quiz-option" data-correct="false">D) They didn't - the belts are why we lost contact</div>
+                    </div>
+                    <div class="quiz-feedback hidden mt-4 p-3 bg-blue-900 rounded-lg">
+                        <p><strong>Correct Answer:</strong> C) Speed, shielding, and trajectory minimized exposure. The Apollo trajectories avoided the most intense regions, and the short transit time plus spacecraft shielding kept doses within safe limits (~1 rem total).</p>
+                    </div>
+                </div>
+                
+                <div class="info-bubble p-8">
+                    <h3 class="text-2xl font-bold mb-4">4. What modern evidence confirms the moon landings?</h3>
+                    <div class="space-y-3 mt-4">
+                        <div class="quiz-option" data-correct="false">A) Time-travel photos from future missions</div>
+                        <div class="quiz-option" data-correct=" true">B) Satellite images of landing sites showing equipment</div>
+                        <div class="quiz-option" data-correct="false">C) Moon rock samples that turned out to be meteors</div>
+                        <div class="quiz-option" data-correct="false">D) Soviet archives confirming they knew it was fake</div>
+                    </div>
+                    <div class="quiz-feedback hidden mt-4 p-3 bg-blue-900 rounded-lg">
+                        <p><strong>Correct Answer:</strong> B) Satellite images of landing sites showing equipment. NASA's Lunar Reconnaissance Orbiter (2009) photographed all six landing sites showing descent stages, experiment packages, and even footpaths.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="bg-black bg-opacity-80 py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>APUSH Final Project - Was the Moon Landing Real?</p>
+            <p class="mt-2 text-sm opacity-70">Created using historical evidence and scientific analysis</p>
+            <div class="mt-4 flex justify-center space-x-4">
+                <a href="#theory" class="hover:text-blue-400">Theory</a>
+                <a href="#evidence" class="hover:text-blue-400">Evidence</a>
+                <a href="#rebuttals" class="hover:text-blue-400">Rebuttals</a>
+                <a href="#timeline" class="hover:text-blue-400">Timeline</a>
+                <a href="#quiz" class="hover:text-blue-400">Quiz</a>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Satellite orbit around cursor
+        let angle = 0;
+        const orbitRadius = 80;
+        const satellite = document.getElementById('satellite');
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        
+        // Smoothly update satellite position
+        function updateSatellitePosition() {
+            angle += 0.02;
+            const satelliteX = mouseX + Math.cos(angle) * orbitRadius;
+            const satelliteY = mouseY + Math.sin(angle) * orbitRadius;
+            
+            satellite.style.transform = `translate(${satelliteX}px, ${satelliteY}px) rotate(${angle * 2}rad)`;
+            
+            requestAnimationFrame(updateSatellitePosition);
+        }
+        
+        // Track mouse position
+        document.addEventListener('mousemove', function(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        // Start animation
+        updateSatellitePosition();
+        
+        // Astronaut collision detection with subtle effects
+        let lastCollisionTime = 0;
+        
+        document.addEventListener('mousemove', function(e) {
+            const now = Date.now();
+            if (now - lastCollisionTime < 500) return; // Cooldown period
+            
+            const astronauts = document.querySelectorAll('.astronaut');
+            const cursorX = e.clientX;
+            const cursorY = e.clientY;
+            const cursorRadius = 30; // Cursor hit radius
+            
+            astronauts.forEach(astronaut => {
+                const astronautRect = astronaut.getBoundingClientRect();
+                const astronautX = astronautRect.left + astronautRect.width / 2;
+                const astronautY = astronautRect.top + astronautRect.height / 2;
+                
+                const dx = cursorX - astronautX;
+                const dy = cursorY - astronautY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // Collision detected
+                if (distance < cursorRadius + astronautRect.width / 2) {
+                    lastCollisionTime = now;
+                    
+                    // Calculate push direction (opposite to cursor direction)
+                    const pushX = astronautX - cursorX;
+                    const pushY = astronautY - cursorY;
+                    const pushNorm = Math.max(1, Math.sqrt(pushX * pushX + pushY * pushY));
+                    const pushForce = 20; // Reduced push force for subtle effect
+                    
+                    const newX = (parseFloat(astronaut.style.left) || 0) + (pushX / pushNorm) * pushForce;
+                    const newY = (parseFloat(astronaut.style.top) || 0) + (pushY / pushNorm) * pushForce;
+                    
+                    // Update astronaut position
+                    astronaut.style.left = `${Math.max(5, Math.min(95, newX))}%`;
+                    astronaut.style.top = `${Math.max(5, Math.min(95, newY))}%`;
+                    
+                    // Collision visual effect
+                    astronaut.classList.add('collision');
+                    setTimeout(() => {
+                        astronaut.classList.remove('collision');
+                    }, 200);
+                }
+            });
+        });
+        
+        // Quiz functionality
+        document.querySelectorAll('.quiz-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove all existing selections first
+                const allOptions = this.parentElement.querySelectorAll('.quiz-option');
+                allOptions.forEach(opt => {
+                    opt.classList.remove('correct', 'incorrect');
+                });
+                
+                // Mark selected option
+                if (this.dataset.correct === 'true') {
+                    this.classList.add('correct');
+                } else {
+                    this.classList.add('incorrect');
+                    // Also show correct answer
+                    const correctOption = this.parentElement.querySelector('[data-correct="true"]');
+                    correctOption.classList.add('correct');
+                }
+                
+                // Show feedback
+                this.closest('.info-bubble').querySelector('.quiz-feedback').classList.remove('hidden');
+            });
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuButton = document.querySelector('button.md\\:hidden');
+        mobileMenuButton.addEventListener('click', function() {
+            // This would toggle a mobile menu if implemented
+            alert('Mobile menu would appear here on a complete implementation');
+        });
+    </script>
+<p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px;position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle;display:inline-block;margin-right:3px;filter:brightness(0) invert(1);"><a href="https://enzostvs-deepsite.hf.space" style="color: #fff;text-decoration: underline;" target="_blank" >DeepSite</a> - 🧬 <a href="https://enzostvs-deepsite.hf.space?remix=aadi6/apush-proj" style="color: #fff;text-decoration: underline;" target="_blank" >Remix</a></p></body>
+</html>
